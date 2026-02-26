@@ -11,10 +11,6 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - os: macos-14
-                      platform: darwin
-                      arch: arm64
-                      wheel-tag: macosx_14_0_arm64
                     - os: macos-15
                       platform: darwin
                       arch: arm64
@@ -31,8 +27,15 @@ jobs:
                       platform: linux
                       arch: arm64
                       wheel-tag: manylinux2014_aarch64
+                    - os: windows-latest
+                      platform: win
+                      arch: x64
+                      wheel-tag: win_amd64
 
         runs-on: ${{ matrix.os }}
+        defaults:
+            run:
+                shell: bash
 
         steps:
             - name: Checkout
