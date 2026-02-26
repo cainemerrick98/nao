@@ -132,6 +132,32 @@ class TestLLMConnection:
             assert success is False
             assert "Unauthorized" in message
 
+    def test_openrouter_connection_success(self):
+        config = LLMConfig(provider=LLMProvider.OPENROUTER, api_key="sk-test-api-key")
+        with patch("openai.OpenAI") as mock_openai_class:
+            mock_client = MagicMock()
+            mock_client.models.list.return_value = [MagicMock(), MagicMock(), MagicMock()]
+            mock_openai_class.return_value = mock_client
+            success, message = check_llm_connection(config)
+            assert success is True
+            assert "Connected successfully" in message
+            assert "3 models available" in message
+            # Verify OpenAI was called with OpenRouter base_url
+            mock_openai_class.assert_called_once_with(
+                base_url="https://openrouter.ai/api/v1", api_key="sk-test-api-key"
+            )
+
+    def test_openrouter_exception_returns_failure(self):
+        """API exception should return False with error message."""
+        config = LLMConfig(provider=LLMProvider.OPENROUTER, api_key="invalid")
+        with patch("openai.OpenAI") as mock_class:
+            mock_class.return_value.models.list.side_effect = Exception("Invalid API key")
+
+            success, message = check_llm_connection(config)
+
+            assert success is False
+            assert "Invalid API key" in message
+
 
 class TestDatabaseConnection:
     """Tests for check_connection method on database configs."""
