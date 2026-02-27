@@ -2,8 +2,8 @@ import type { ToolResultOutput } from '@ai-sdk/provider-utils';
 import type { ReactNode } from 'react';
 
 import { renderToMarkdown } from '../../lib/markdown/render-to-markdown';
-
 export { DisplayChartOutput } from './display-chart';
+export { DisplayDatatableOutput } from './display-datatable';
 export { ExecuteSqlOutput } from './execute-sql';
 export { GrepOutput } from './grep';
 export { ListOutput } from './list';

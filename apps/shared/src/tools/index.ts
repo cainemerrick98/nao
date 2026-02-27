@@ -1,5 +1,5 @@
-export * as displayDatatable from './display-datatable';
 export * as displayChart from './display-chart';
+export * as displayDatatable from './display-datatable';
 export * as executePython from './execute-python';
 export * as executeSql from './execute-sql';
 export * as grep from './grep';

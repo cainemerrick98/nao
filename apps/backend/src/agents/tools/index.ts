@@ -3,6 +3,7 @@ export { isPythonAvailable } from './execute-python';
 import { mcpService } from '../../services/mcp.service';
 import { AgentSettings } from '../../types/agent-settings';
 import displayChart from './display-chart';
+import displayDatatable from './display-datatable';
 import executePython from './execute-python';
 import executeSql from './execute-sql';
 import grep from './grep';
@@ -15,6 +16,7 @@ import suggestFollowUps from './suggest-follow-ups';
 export const tools = {
 	story,
 	display_chart: displayChart,
+	display_datatable: displayDatatable,
 	...(executePython && { execute_python: executePython }),
 	execute_sql: executeSql,
 	grep,
