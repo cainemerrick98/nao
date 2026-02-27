@@ -85,6 +85,13 @@ export function SystemPrompt({ memories = [], userRules, connections = [], skill
 					(e.g. YYYY-MM-DD). Use "category" for quarter labels (quarter_ending), fiscal periods (FY25-Q1), or
 					any non-ISO-date strings.
 				</ListItem>
+				<ListItem>
+					The display_datatable tool is useful when the user wants to explore the data themselves and then
+					will ask follow ups based on their exploration. For example a good use case is when a query returns
+					many rows and columns and the users prompt indicates they want to inspect the data. A bad use case
+					is when there is only a small number of rows and columns in the query result. **Do not use this tool
+					for every sql query**
+				</ListItem>
 			</List>
 
 			<Title level={2}>SQL Query Rules</Title>
