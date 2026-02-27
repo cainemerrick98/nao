@@ -1,5 +1,6 @@
 import { displayDatatable } from '@nao/shared/tools';
 import { tool } from 'ai';
+
 import { DisplayDatatableOutput, renderToModelOutput } from '../../components/tool-outputs';
 
 export default tool<displayDatatable.Input, displayDatatable.Output>({

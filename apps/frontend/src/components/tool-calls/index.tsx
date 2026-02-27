@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { StoryToolCall } from './story';
 import { DefaultToolCall } from './default';
 import { DisplayChartToolCall } from './display-chart';
+import { DisplayDatatableToolCall } from './display-datatable';
 import { ExecutePythonToolCall } from './execute-python';
 import { ExecuteSqlToolCall } from './execute-sql';
 import { GrepToolCall } from './grep';
@@ -21,6 +22,7 @@ const toolComponents: Partial<{
 	[TToolName in StaticToolName]: React.ComponentType<ToolCallComponentProps<TToolName>>;
 }> = {
 	story: StoryToolCall,
+	display_datatable: DisplayDatatableToolCall,
 	display_chart: DisplayChartToolCall,
 	execute_python: ExecutePythonToolCall,
 	execute_sql: ExecuteSqlToolCall,
