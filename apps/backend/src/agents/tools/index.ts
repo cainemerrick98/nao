@@ -3,6 +3,7 @@ export { isPythonAvailable } from './execute-python';
 import { mcpService } from '../../services/mcp.service';
 import { AgentSettings } from '../../types/agent-settings';
 import displayChart from './display-chart';
+import displayKpi from './display-kpi';
 import executePython from './execute-python';
 import executeSql from './execute-sql';
 import grep from './grep';
@@ -14,6 +15,7 @@ import suggestFollowUps from './suggest-follow-ups';
 
 export const tools = {
 	story,
+	display_kpi: displayKpi,
 	display_chart: displayChart,
 	...(executePython && { execute_python: executePython }),
 	execute_sql: executeSql,

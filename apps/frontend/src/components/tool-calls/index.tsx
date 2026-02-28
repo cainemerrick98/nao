@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { StoryToolCall } from './story';
 import { DefaultToolCall } from './default';
+import { DisplayKpiToolCall } from './display-kpi';
 import { DisplayChartToolCall } from './display-chart';
 import { ExecutePythonToolCall } from './execute-python';
 import { ExecuteSqlToolCall } from './execute-sql';
@@ -21,6 +22,7 @@ const toolComponents: Partial<{
 	[TToolName in StaticToolName]: React.ComponentType<ToolCallComponentProps<TToolName>>;
 }> = {
 	story: StoryToolCall,
+	display_kpi: DisplayKpiToolCall,
 	display_chart: DisplayChartToolCall,
 	execute_python: ExecutePythonToolCall,
 	execute_sql: ExecuteSqlToolCall,

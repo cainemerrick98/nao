@@ -1,4 +1,5 @@
 export * as displayChart from './display-chart';
+export * as displayKpi from './display-kpi';
 export * as executePython from './execute-python';
 export * as executeSql from './execute-sql';
 export * as grep from './grep';
