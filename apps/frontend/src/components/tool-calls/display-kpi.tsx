@@ -1,6 +1,5 @@
 import { memo, useMemo } from 'react';
 import { useAgentContext } from '../../contexts/agent.provider';
-import { TextShimmer } from '../ui/text-shimmer';
 import { Skeleton } from '../ui/skeleton';
 import { ToolCallWrapper } from './tool-call-wrapper';
 import type { displayKpi } from '@nao/shared/tools';
@@ -8,6 +7,7 @@ import type { ToolCallComponentProps } from '.';
 
 export const DisplayKpiToolCall = ({ toolPart: { state, input, output } }: ToolCallComponentProps<'display_kpi'>) => {
 	const config = state !== 'input-streaming' ? input : undefined;
+	const { messages } = useAgentContext();
 
 	if (output && output.error) {
 		return (
@@ -19,73 +19,75 @@ export const DisplayKpiToolCall = ({ toolPart: { state, input, output } }: ToolC
 
 	if (!config) {
 		return (
-			<div className='my-4 flex flex-col gap-2 items-center aspect-3/2'>
-				<Skeleton className='w-1/2 h-4' />
-				<Skeleton className='w-full flex-1 flex items-center justify-center gap-2'>
-					<TextShimmer text='Loading KPI' />
-				</Skeleton>
+			<div className='flex flex-wrap gap-2 my-3'>
+				{Array.from({ length: 3 }).map((_, i) => (
+					<div
+						key={i}
+						className='flex flex-col gap-2.5 px-4 py-3 rounded-lg border border-white/8 bg-gray-900 w-48'
+					>
+						<Skeleton className='h-2 w-16' />
+						<Skeleton className='h-6 w-12' />
+					</div>
+				))}
 			</div>
 		);
 	}
 
+	const resolvedKpis = useMemo(
+		() =>
+			config.kpis.map((kpi) => {
+				let value: unknown = null;
+				for (const message of messages) {
+					for (const part of message.parts) {
+						if (part.type === 'tool-execute_sql' && part.output && part.output.id === kpi.query_id) {
+							const outputData = part.output.data as Record<string, unknown>[];
+							if (outputData.length === 1 && part.output.columns.includes(kpi.column)) {
+								value = outputData[0][kpi.column] ?? null;
+							}
+							break;
+						}
+					}
+				}
+				return { kpi, value };
+			}),
+		[messages, config.kpis],
+	);
+
 	return (
-		<div className='flex flex-col items-center my-4 gap-2 aspect-3/2'>
-			<div className='relative w-full flex justify-end'>
-				<div className='flex items-center gap-1'>
-					<div className='flex w-full divide-x rounded-lg border bg-muted/30'>
-						{config.kpis.map((kpi, index) => (
-							<KpiDisplay key={index} kpi={kpi} />
-						))}
-					</div>
-				</div>
-			</div>
+		<div className='flex flex-wrap gap-2 my-3'>
+			{resolvedKpis.map(({ kpi, value }, index) => (
+				<KpiCard key={index} kpi={kpi} value={value} />
+			))}
 		</div>
 	);
 };
 
-export interface KpiDisplayProps {
+interface KpiCardProps {
 	kpi: displayKpi.Kpi;
+	value: unknown;
 }
 
-export const KpiDisplay = memo(function KpiDisplay({ kpi }: KpiDisplayProps) {
-	const { messages } = useAgentContext();
-
-	const sourceValue = useMemo(() => {
-		for (const message of messages) {
-			for (const part of message.parts) {
-				if (part.type === 'tool-execute_sql' && part.output && part.output.id === kpi.query_id) {
-					const outputData = part.output.data as Record<string, unknown>[];
-					const outputColumns = part.output.columns;
-
-					// Validate
-					if (outputData.length !== 1) {
-						return null;
-					}
-					if (!outputColumns.includes(kpi.column)) {
-						return null;
-					}
-
-					// Extract value
-					const row = outputData[0]; // assuming one row per KPI
-					return row[kpi.column] ?? null;
-				}
-			}
-		}
-		return null;
-	}, [messages, kpi]);
-
-	if (sourceValue === null) {
-		return (
-			<ToolCallWrapper defaultExpanded title='Could not display the KPI'>
-				<div className='p-4 text-red-400 text-sm'>{}</div>
-			</ToolCallWrapper>
-		);
+const KpiCard = memo(function KpiCard({ kpi, value }: KpiCardProps) {
+	let displayValue: string;
+	if (value === null || value === undefined) {
+		displayValue = '—';
+	} else if (typeof value === 'number' && !Number.isInteger(value)) {
+		displayValue = value.toFixed(2);
+	} else {
+		displayValue = String(value);
 	}
 
 	return (
-		<div className='flex-1 px-4 py-3 text-center'>
-			<div className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>{kpi.display_name}</div>
-			<div className='mt-1 text-2xl font-semibold tabular-nums'>{String(sourceValue)}</div>
+		<div className='flex flex-col justify-between gap-4 w-48 px-5 py-4 rounded-lg border border-white/8 bg-gray-900 hover:bg-gray-800 hover:border-white/15 transition-colors'>
+			<span
+				title={kpi.display_name}
+				className='text-[10px] font-semibold uppercase tracking-widest text-gray-500 truncate cursor-default'
+			>
+				{kpi.display_name}
+			</span>
+			<span className='text-3xl font-bold tabular-nums tracking-tight text-white leading-none'>
+				{displayValue}
+			</span>
 		</div>
 	);
 });
