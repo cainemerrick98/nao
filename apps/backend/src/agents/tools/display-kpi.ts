@@ -8,19 +8,10 @@ export default tool<displayKpi.Input, displayKpi.Output>({
 	inputSchema: displayKpi.InputSchema,
 	outputSchema: displayKpi.OutputSchema,
 
-	execute: async ({ kpis, display_type }) => {
+	execute: async ({ kpis }) => {
 		// Validate a kpi has been passed
 		if (kpis.length === 0) {
-			return { _version: '1', success: false, error: 'At least kpi is required' };
-		}
-
-		// Validate display type is legitimate
-		if (display_type && display_type != 'banner' && display_type != 'card') {
-			return {
-				_version: '1',
-				success: false,
-				error: 'If display type is specified it must be "banner" or "card"',
-			};
+			return { _version: '1', success: false, error: 'At least one kpi is required' };
 		}
 
 		return { _version: '1', success: true };

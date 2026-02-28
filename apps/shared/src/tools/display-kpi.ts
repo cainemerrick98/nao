@@ -8,10 +8,6 @@ export const KpiSchema = z.object({
 
 export const InputSchema = z.object({
 	kpis: z.array(KpiSchema).min(1),
-	display_type: z
-		.enum(['card', 'banner'])
-		.optional()
-		.describe('Optional: force display type. If not provided, card is used for single KPI, banner for multiple.'),
 });
 
 export const OutputSchema = z.object({
