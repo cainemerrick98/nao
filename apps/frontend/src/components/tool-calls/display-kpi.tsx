@@ -5,6 +5,7 @@ import { ToolCallWrapper } from './tool-call-wrapper';
 import type { displayKpi } from '@nao/shared/tools';
 import type { ToolCallComponentProps } from '.';
 
+// TODO: Handle adding kpis to stories from chat
 export const DisplayKpiToolCall = ({ toolPart: { state, input, output } }: ToolCallComponentProps<'display_kpi'>) => {
 	const config = state !== 'input-streaming' ? input : undefined;
 	const { messages } = useAgentContext();
