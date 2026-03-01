@@ -8,9 +8,11 @@ import { Streamdown } from 'streamdown';
 import { GripVertical } from 'lucide-react';
 import { StoryChartEmbed } from './story-chart-embed';
 import { StoryTableEmbed } from './story-table-embed';
+import { StoryKpiEmbed } from './story-kpi-embed';
 import type { ReactNodeViewProps, Editor } from '@tiptap/react';
 import type { Segment } from '@/lib/story-segments';
 import {
+	parseKpiBlock,
 	getGridClass,
 	parseChartAttributes,
 	parseChartBlock,
@@ -45,6 +47,10 @@ export function preprocessForEditor(code: string): string {
 
 	result = result.replace(/<table\s+[^/>]*\/?>/g, (match) => {
 		return `<table-embed data-raw="${encodeForAttr(match)}"></table-embed>`;
+	});
+
+	result = result.replace(/<kpis>[\s\S]*?<\/kpis>/g, (match) => {
+		return `<kpi-embed data-raw="${encodeForAttr(match)}"></kpi-embed>`;
 	});
 
 	return result;
@@ -118,6 +124,84 @@ const ChartBlock = Node.create({
 
 	addNodeView() {
 		return ReactNodeViewRenderer(ChartBlockView);
+	},
+
+	addStorage() {
+		return {
+			markdown: {
+				serialize(state: any, node: any) {
+					state.write(node.attrs.rawTag);
+					state.closeBlock(node);
+				},
+				parse: {},
+			},
+		};
+	},
+});
+
+// ---------------------------------------------------------------------------
+// KpiBlock extension – atom node rendered as a SQL table
+// ---------------------------------------------------------------------------
+
+function KpiBlockView({ node }: ReactNodeViewProps) {
+	const rawTag = node.attrs.rawTag as string;
+
+	const kpis = useMemo(() => {
+		const inner = rawTag.match(/<kpis>([\s\S]*?)<\/kpis>/);
+		return inner ? parseKpiBlock(inner[1]) : [];
+	}, [rawTag]);
+
+	if (kpis.length === 0) {
+		return (
+			<NodeViewWrapper draggable data-type='chart-block'>
+				<div className='my-2 rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground'>
+					Invalid KPI block
+				</div>
+			</NodeViewWrapper>
+		);
+	}
+
+	return (
+		<NodeViewWrapper draggable data-type='kpi-block'>
+			<div className='my-2'>
+				<StoryKpiEmbed kpis={kpis} />
+			</div>
+		</NodeViewWrapper>
+	);
+}
+
+const KpiBlock = Node.create({
+	name: 'kpiBlock',
+	group: 'block',
+	atom: true,
+	selectable: true,
+	draggable: true,
+
+	addAttributes() {
+		return { rawTag: { default: '' } };
+	},
+
+	parseHTML() {
+		return [
+			{
+				tag: 'kpi-embed',
+				getAttrs(element) {
+					if (typeof element === 'string') {
+						return false;
+					}
+					const encoded = element.getAttribute('data-raw') || '';
+					return { rawTag: decodeFromAttr(encoded) };
+				},
+			},
+		];
+	},
+
+	renderHTML({ HTMLAttributes }) {
+		return ['kpi-embed', mergeAttributes(HTMLAttributes)];
+	},
+
+	addNodeView() {
+		return ReactNodeViewRenderer(KpiBlockView);
 	},
 
 	addStorage() {
@@ -249,6 +333,8 @@ function GridBlockView({ node }: ReactNodeViewProps) {
 								<StoryChartEmbed chart={segment.chart} />
 							) : segment.type === 'table' ? (
 								<StoryTableEmbed table={segment.table} />
+							) : segment.type === 'kpi' ? (
+								<StoryKpiEmbed kpis={segment.kpis} />
 							) : null}
 						</div>
 					))}
@@ -323,6 +409,7 @@ const EDITOR_EXTENSIONS = [
 	ChartBlock,
 	TableBlock,
 	GridBlock,
+	KpiBlock,
 ];
 
 interface StoryEditorProps {

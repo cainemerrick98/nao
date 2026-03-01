@@ -4,6 +4,7 @@ export type SummarySegment =
 	| { type: 'text'; content: string }
 	| { type: 'chart'; chartType: string; title: string }
 	| { type: 'table'; title: string }
+	| { type: 'kpi'; count: number }
 	| { type: 'grid'; cols: number; children: SummarySegment[] };
 
 export type StorySummary = {
@@ -30,6 +31,8 @@ function ThumbnailSegment({ segment }: { segment: SummarySegment }) {
 			return <MiniTable title={segment.title} />;
 		case 'grid':
 			return <GridBlock cols={segment.cols} children={segment.children} />;
+		case 'kpi':
+			return <MiniKpi count={segment.count} />;
 	}
 }
 
@@ -90,6 +93,22 @@ function MiniChart({ chartType, title }: { chartType: string; title: string }) {
 		<div className={cn('rounded border border-border/60 px-1.5 pt-1 pb-1', style.bg)}>
 			{title && <span className='block text-[6px] font-medium text-foreground/50 truncate mb-0.5'>{title}</span>}
 			<ChartSvg chartType={chartType} stroke={style.stroke} fill={style.fill} />
+		</div>
+	);
+}
+
+function MiniKpi({ count }: { count: number }) {
+	const slots = Array.from({ length: Math.min(count, 4) });
+	return (
+		<div className='rounded border border-border/60 bg-slate-50/70 dark:bg-slate-900/40 px-1.5 pt-1 pb-1'>
+			<div className='flex gap-1'>
+				{slots.map((_, i) => (
+					<div key={i} className='flex flex-col gap-0.5 flex-1'>
+						<div className='h-[3px] w-3/4 rounded-full bg-foreground/20' />
+						<div className='h-[5px] w-full rounded-sm bg-foreground/30' />
+					</div>
+				))}
+			</div>
 		</div>
 	);
 }

@@ -2,6 +2,7 @@ export type SummarySegment =
 	| { type: 'text'; content: string }
 	| { type: 'chart'; chartType: string; title: string }
 	| { type: 'table'; title: string }
+	| { type: 'kpi'; count: number }
 	| { type: 'grid'; cols: number; children: SummarySegment[] };
 
 export type StorySummary = {
@@ -14,7 +15,8 @@ export function extractStorySummary(code: string): StorySummary {
 
 function extractSegments(code: string): SummarySegment[] {
 	const segments: SummarySegment[] = [];
-	const blockRegex = /<grid\s+([^>]*)>([\s\S]*?)<\/grid>|<chart\s+([^/>]*)\/?>|<table\s+([^/>]*)\/?>/g;
+	const blockRegex =
+		/<grid\s+([^>]*)>([\s\S]*?)<\/grid>|<kpis>([\s\S]*?)<\/kpis>|<chart\s+([^/>]*)\/?>|<table\s+([^/>]*)\/?>/g;
 	let match;
 	let lastIndex = 0;
 
@@ -32,7 +34,13 @@ function extractSegments(code: string): SummarySegment[] {
 			const children = extractSegments(match[2]);
 			segments.push({ type: 'grid', cols, children });
 		} else if (match[3] !== undefined) {
-			const attrs = parseAttributes(match[3]);
+			// kpis
+			const count = (match[3].match(/<kpi\s/g) ?? []).length;
+			if (count > 0) {
+				segments.push({ type: 'kpi', count });
+			}
+		} else if (match[4] !== undefined) {
+			const attrs = parseAttributes(match[4]);
 			if (attrs.chart_type) {
 				segments.push({
 					type: 'chart',
@@ -40,8 +48,8 @@ function extractSegments(code: string): SummarySegment[] {
 					title: attrs.title || '',
 				});
 			}
-		} else if (match[4] !== undefined) {
-			const attrs = parseAttributes(match[4]);
+		} else if (match[5] !== undefined) {
+			const attrs = parseAttributes(match[5]);
 			segments.push({
 				type: 'table',
 				title: attrs.title || '',

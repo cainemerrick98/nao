@@ -13,6 +13,7 @@ import {
 	RotateCcw,
 	Share,
 } from 'lucide-react';
+import { StoryKpiEmbed } from './story-kpi-embed';
 import { StoryChartEmbed } from './story-chart-embed';
 import { StoryTableEmbed } from './story-table-embed';
 import { StoryEditor } from './story-editor';
@@ -27,7 +28,7 @@ import { useStoryViewerVersions } from './hooks/use-story-viewer-versions';
 import { useStoryViewerViewMode } from './hooks/use-story-viewer-view-mode';
 import type { StoryViewMode } from './story-viewer.types';
 import type { StorySummary } from '@/lib/story.utils';
-import type { ParsedChartBlock, ParsedTableBlock } from '@/lib/story-segments';
+import type { ParsedChartBlock, ParsedKpiBlock, ParsedTableBlock } from '@/lib/story-segments';
 import type { Editor as TiptapEditor } from '@tiptap/react';
 import { SegmentList } from '@/components/story-rendering';
 import { Button } from '@/components/ui/button';
@@ -318,10 +319,16 @@ const StoryPreview = memo(function StoryPreview({ code }: { code: string }) {
 	const segments = useMemo(() => splitCodeIntoSegments(code), [code]);
 	const renderChart = useCallback((chart: ParsedChartBlock) => <StoryChartEmbed chart={chart} />, []);
 	const renderTable = useCallback((table: ParsedTableBlock) => <StoryTableEmbed table={table} />, []);
+	const renderKpi = useCallback((kpis: ParsedKpiBlock[]) => <StoryKpiEmbed kpis={kpis} />, []);
 
 	return (
 		<div className='p-6 flex flex-col gap-4'>
-			<SegmentList segments={segments} renderChart={renderChart} renderTable={renderTable} />
+			<SegmentList
+				segments={segments}
+				renderChart={renderChart}
+				renderTable={renderTable}
+				renderKpi={renderKpi}
+			/>
 		</div>
 	);
 });

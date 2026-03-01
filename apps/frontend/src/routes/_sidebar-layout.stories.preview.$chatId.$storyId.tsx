@@ -3,10 +3,11 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
 import type { displayChart } from '@nao/shared/tools';
-import type { ParsedChartBlock, ParsedTableBlock } from '@/lib/story-segments';
+import type { ParsedChartBlock, ParsedKpiBlock, ParsedTableBlock } from '@/lib/story-segments';
 import { splitCodeIntoSegments } from '@/lib/story-segments';
 import { SegmentList } from '@/components/story-rendering';
 import { ChartDisplay } from '@/components/tool-calls/display-chart';
+import { KpiCard } from '@/components/tool-calls/display-kpi';
 import { TableDisplay } from '@/components/tool-calls/display-table';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/main';
@@ -57,11 +58,20 @@ function PreviewContent({
 		(table: ParsedTableBlock) => <PreviewTableEmbed table={table} queryData={queryData} />,
 		[queryData],
 	);
+	const renderKpi = useCallback(
+		(kpis: ParsedKpiBlock[]) => <PreviewKpiEmbed kpis={kpis} queryData={queryData} />,
+		[queryData],
+	);
 
 	return (
 		<div className='flex-1 overflow-auto'>
 			<div className='max-w-5xl mx-auto p-8 flex flex-col gap-4'>
-				<SegmentList segments={segments} renderChart={renderChart} renderTable={renderTable} />
+				<SegmentList
+					segments={segments}
+					renderChart={renderChart}
+					renderTable={renderTable}
+					renderKpi={renderKpi}
+				/>
 			</div>
 		</div>
 	);
@@ -103,6 +113,31 @@ function PreviewChartEmbed({
 				series={chart.series}
 				title={chart.title}
 			/>
+		</div>
+	);
+}
+
+function PreviewKpiEmbed({
+	kpis,
+	queryData,
+}: {
+	kpis: ParsedKpiBlock[];
+	queryData: Record<string, { data: Record<string, unknown>[]; columns: string[] }> | null;
+}) {
+	const resolvedKpis = kpis.map((kpi) => {
+		console.log('Hi');
+		console.log(kpi);
+		console.log(queryData);
+		const result = queryData?.[kpi.queryId]?.data;
+		const value = result && result.length === 1 ? (result[0][kpi.column] ?? null) : null;
+		return { kpi, value };
+	});
+
+	return (
+		<div className='flex flex-wrap gap-2 my-3'>
+			{resolvedKpis.map(({ kpi, value }, index) => (
+				<KpiCard key={index} displayName={kpi.displayName} value={value} />
+			))}
 		</div>
 	);
 }

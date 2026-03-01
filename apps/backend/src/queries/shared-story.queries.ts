@@ -152,7 +152,7 @@ export async function collectQueryData(
 	chatId: string,
 	code: string,
 ): Promise<Record<string, { data: unknown[]; columns: string[] }> | null> {
-	const chartRegex = /<(?:chart|table)\s+[^>]*query_id="([^"]*)"[^>]*\/?>/g;
+	const chartRegex = /<(?:chart|table|kpi)\s+[^>]*query_id="([^"]*)"[^>]*\/?>/g;
 	const queryIds = new Set<string>();
 	let match;
 	while ((match = chartRegex.exec(code)) !== null) {

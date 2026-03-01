@@ -2,7 +2,6 @@ import { memo, useMemo } from 'react';
 import { useAgentContext } from '../../contexts/agent.provider';
 import { Skeleton } from '../ui/skeleton';
 import { ToolCallWrapper } from './tool-call-wrapper';
-import type { displayKpi } from '@nao/shared/tools';
 import type { ToolCallComponentProps } from '.';
 
 // TODO: Handle adding kpis to stories from chat
@@ -57,18 +56,18 @@ export const DisplayKpiToolCall = ({ toolPart: { state, input, output } }: ToolC
 	return (
 		<div className='flex flex-wrap gap-2 my-3'>
 			{resolvedKpis.map(({ kpi, value }, index) => (
-				<KpiCard key={index} kpi={kpi} value={value} />
+				<KpiCard key={index} displayName={kpi.display_name} value={value} />
 			))}
 		</div>
 	);
 };
 
 interface KpiCardProps {
-	kpi: displayKpi.Kpi;
+	displayName: string;
 	value: unknown;
 }
 
-const KpiCard = memo(function KpiCard({ kpi, value }: KpiCardProps) {
+export const KpiCard = memo(function KpiCard({ displayName, value }: KpiCardProps) {
 	let displayValue: string;
 	if (value === null || value === undefined) {
 		displayValue = '—';
@@ -81,10 +80,10 @@ const KpiCard = memo(function KpiCard({ kpi, value }: KpiCardProps) {
 	return (
 		<div className='flex flex-col justify-between gap-4 w-48 px-5 py-4 rounded-lg border border-white/8 bg-gray-900 hover:bg-gray-800 hover:border-white/15 transition-colors'>
 			<span
-				title={kpi.display_name}
+				title={displayName}
 				className='text-[10px] font-semibold uppercase tracking-widest text-gray-500 truncate cursor-default'
 			>
-				{kpi.display_name}
+				{displayName}
 			</span>
 			<span className='text-3xl font-bold tabular-nums tracking-tight text-white leading-none'>
 				{displayValue}

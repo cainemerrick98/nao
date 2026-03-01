@@ -1,15 +1,21 @@
 import { Fragment, memo, useMemo } from 'react';
 import { Streamdown } from 'streamdown';
-import type { Segment, ParsedChartBlock, ParsedTableBlock } from '@/lib/story-segments';
+import type { Segment, ParsedKpiBlock, ParsedChartBlock, ParsedTableBlock } from '@/lib/story-segments';
 import { getGridClass } from '@/lib/story-segments';
 
 interface SegmentRendererProps {
 	segments: Segment[];
+	renderKpi: (kpis: ParsedKpiBlock[], key: number) => React.ReactNode;
 	renderChart: (chart: ParsedChartBlock, key: number) => React.ReactNode;
 	renderTable: (table: ParsedTableBlock, key: number) => React.ReactNode;
 }
 
-export const SegmentList = memo(function SegmentList({ segments, renderChart, renderTable }: SegmentRendererProps) {
+export const SegmentList = memo(function SegmentList({
+	segments,
+	renderKpi,
+	renderChart,
+	renderTable,
+}: SegmentRendererProps) {
 	return (
 		<>
 			{segments.map((segment, i) => {
@@ -20,6 +26,8 @@ export const SegmentList = memo(function SegmentList({ segments, renderChart, re
 								{segment.content}
 							</Streamdown>
 						);
+					case 'kpi':
+						return <Fragment key={i}>{renderKpi(segment.kpis, i)}</Fragment>;
 					case 'chart':
 						return <Fragment key={i}>{renderChart(segment.chart, i)}</Fragment>;
 					case 'table':
@@ -30,6 +38,7 @@ export const SegmentList = memo(function SegmentList({ segments, renderChart, re
 								key={i}
 								cols={segment.cols}
 								children={segment.children}
+								renderKpi={renderKpi}
 								renderChart={renderChart}
 								renderTable={renderTable}
 							/>
@@ -43,11 +52,13 @@ export const SegmentList = memo(function SegmentList({ segments, renderChart, re
 const StoryGrid = memo(function StoryGrid({
 	cols,
 	children,
+	renderKpi,
 	renderChart,
 	renderTable,
 }: {
 	cols: number;
 	children: Segment[];
+	renderKpi: (kpis: ParsedKpiBlock[], key: number) => React.ReactNode;
 	renderChart: (chart: ParsedChartBlock, key: number) => React.ReactNode;
 	renderTable: (table: ParsedTableBlock, key: number) => React.ReactNode;
 }) {
@@ -60,6 +71,8 @@ const StoryGrid = memo(function StoryGrid({
 					<div key={i} className='min-w-0'>
 						{segment.type === 'markdown' ? (
 							<Streamdown mode='static'>{segment.content}</Streamdown>
+						) : segment.type === 'kpi' ? (
+							renderKpi(segment.kpis, i)
 						) : segment.type === 'chart' ? (
 							renderChart(segment.chart, i)
 						) : segment.type === 'table' ? (
@@ -68,6 +81,7 @@ const StoryGrid = memo(function StoryGrid({
 							<StoryGrid
 								cols={segment.cols}
 								children={segment.children}
+								renderKpi={renderKpi}
 								renderChart={renderChart}
 								renderTable={renderTable}
 							/>

@@ -216,6 +216,8 @@ function extractSegmentText(segment: SummarySegment): string {
 			return segment.title;
 		case 'table':
 			return segment.title;
+		case 'kpi':
+			return segment.type;
 		case 'grid':
 			return segment.children.map(extractSegmentText).join(' ');
 	}

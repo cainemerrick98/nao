@@ -9,6 +9,7 @@ export default createTool<story.Input, story.Output>({
 		'Create or modify a nao Story — an interactive document combining markdown text and chart visualizations.',
 		'Use "create" to initialize a new story, "update" to search-and-replace within it (producing a new version),',
 		'or "replace" to overwrite the entire content (producing a new version).',
+		'KPIs are embedded via <kpis><kpi query_id="..." column="..." display_name="..."/>...</kpis>',
 		'Charts are embedded via <chart query_id="..." chart_type="..." x_axis_key="..." series=\'[...]\' title="..." />.',
 		'SQL result tables are embedded via <table query_id="..." title="..." />.',
 		'Use <grid cols="2">...</grid> to display charts side by side in a responsive grid.',

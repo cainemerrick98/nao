@@ -1,3 +1,9 @@
+export interface ParsedKpiBlock {
+	queryId: string;
+	column: string;
+	displayName: string;
+}
+
 export interface ParsedChartBlock {
 	queryId: string;
 	chartType: string;
@@ -14,6 +20,7 @@ export interface ParsedTableBlock {
 
 export type Segment =
 	| { type: 'markdown'; content: string }
+	| { type: 'kpi'; kpis: ParsedKpiBlock[] }
 	| { type: 'chart'; chart: ParsedChartBlock }
 	| { type: 'table'; table: ParsedTableBlock }
 	| { type: 'grid'; cols: number; children: Segment[] };
@@ -66,6 +73,23 @@ export function parseChartBlock(attrString: string): ParsedChartBlock | null {
 	};
 }
 
+export function parseKpiBlock(innerContent: string): ParsedKpiBlock[] {
+	const kpis: ParsedKpiBlock[] = [];
+	const kpiRegex = /<kpi\s+([^/>]*)\/>/g;
+	let match;
+	while ((match = kpiRegex.exec(innerContent)) !== null) {
+		const attrs = parseChartAttributes(match[1]);
+		if (attrs.query_id && attrs.column && attrs.display_name) {
+			kpis.push({
+				queryId: attrs.query_id,
+				column: attrs.column,
+				displayName: attrs.display_name,
+			});
+		}
+	}
+	return kpis;
+}
+
 export function parseTableBlock(attrString: string): ParsedTableBlock | null {
 	const attrs = parseChartAttributes(attrString);
 	if (!attrs.query_id) {
@@ -91,7 +115,8 @@ export function getGridClass(cols: number): string {
 
 export function splitCodeIntoSegments(code: string): Segment[] {
 	const segments: Segment[] = [];
-	const blockRegex = /<grid\s+([^>]*)>([\s\S]*?)<\/grid>|<chart\s+([^/>]*)\/?>|<table\s+([^/>]*)\/?>/g;
+	const blockRegex =
+		/<grid\s+([^>]*)>([\s\S]*?)<\/grid>|<kpis>([\s\S]*?)<\/kpis>|<chart\s+([^/>]*)\/?>|<table\s+([^/>]*)\/?>/g;
 	let match;
 	let lastIndex = 0;
 
@@ -109,12 +134,17 @@ export function splitCodeIntoSegments(code: string): Segment[] {
 			const gridChildren = splitCodeIntoSegments(match[2]);
 			segments.push({ type: 'grid', cols, children: gridChildren });
 		} else if (match[3] !== undefined) {
-			const chart = parseChartBlock(match[3]);
+			const kpis = parseKpiBlock(match[3]);
+			if (kpis.length > 0) {
+				segments.push({ type: 'kpi', kpis: kpis });
+			}
+		} else if (match[4] !== undefined) {
+			const chart = parseChartBlock(match[4]);
 			if (chart) {
 				segments.push({ type: 'chart', chart });
 			}
-		} else if (match[4] !== undefined) {
-			const table = parseTableBlock(match[4]);
+		} else if (match[5] !== undefined) {
+			const table = parseTableBlock(match[5]);
 			if (table) {
 				segments.push({ type: 'table', table });
 			}
